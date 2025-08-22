@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build --prefix solidworks-tracker"
+  publish = "solidworks-tracker/dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
