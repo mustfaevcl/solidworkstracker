@@ -1,2 +1,4 @@
 *.glb filter=lfs diff=lfs merge=lfs -text
+*.bingit filter=lfs diff=lfs merge=lfs -text
+init filter=lfs diff=lfs merge=lfs -text
 public/* filter=lfs diff=lfs merge=lfs -text
