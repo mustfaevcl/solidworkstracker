@@ -1,1 +1,17 @@
+# Root public (keep ignored)
 public/
+
+# Ignore large 3D/model assets in nested apps so repo stays light
+solidworks-tracker/public/**/*.glb
+solidworks-tracker/public/**/*.bin
+solidworks-tracker/solidworks-tracker/public/**/*.glb
+solidworks-tracker/solidworks-tracker/public/**/*.bin
+solidworks-tracker-clean/solidworks-tracker/public/**/*.glb
+solidworks-tracker-clean/solidworks-tracker/public/**/*.bin
+
+# Ignore env files in app
+solidworks-tracker/.env
+solidworks-tracker/.env.local
+
+# Local Netlify folder
+.netlify
