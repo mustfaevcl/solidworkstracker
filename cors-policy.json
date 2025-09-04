@@ -1,0 +1,11 @@
+[
+  {
+    "origin": [
+      "http://localhost:5174",
+      "https://your-production-domain.com"
+    ],
+    "method": ["GET", "HEAD", "OPTIONS"],
+    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
+    "maxAgeSeconds": 3600
+  }
+]
