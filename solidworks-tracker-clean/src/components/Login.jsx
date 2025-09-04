@@ -3,46 +3,11 @@ import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment } from '@react-three/drei';
 
-// Kullanıcıları doğrudan frontend'de saklıyoruz
-const localUsers = [
-  {
-    id: 1,
-    username: 'admin',
-    password: 'admin123',
-    name: 'Admin',
-    role: 'admin'
-  },
-  {
-    id: 2,
-    username: 'production_user',
-    password: 'prodpass',
-    name: 'Üretim Sorumlusu',
-    role: 'production'
-  },
-  {
-    id: 3,
-    username: 'quality_user',
-    password: 'qualpass',
-    name: 'Kalite Kontrol',
-    role: 'quality'
-  }
-];
 
 // Basit 3D model görüntüleyici
 function SimpleModel() {
-  const computeModelUrl = () => {
-    const env = import.meta?.env || {};
-    const raw = (env.VITE_MODEL_URL && String(env.VITE_MODEL_URL).trim()) || '';
-    // Doğrudan URL varsa onu kullan; yoksa Google Cloud Storage fallback'i kullan
-    return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
-  };
-
-  const modelPath = computeModelUrl();
-  const { scene } = useGLTF(modelPath, {
-    onError: (e) => console.error("GLTF yükleme hatası:", e),
-    textureColorSpace: THREE.SRGBColorSpace,
-    crossorigin: 'anonymous'
-  });
+  const modelPath = '/otc-0915-0000000-r00.glb'; // Mevcut modelinizin yolu
+  const { scene } = useGLTF(modelPath);
   
   useEffect(() => {
     if (scene) {
@@ -52,63 +17,12 @@ function SimpleModel() {
       // Materyalleri güncelle - daha parlak görünüm için
       scene.traverse((child) => {
         if (child.isMesh) {
-          // Handle texture errors first
-          if (child.material) {
-            const materials = Array.isArray(child.material) ? child.material : [child.material];
-            materials.forEach(material => {
-              // Check for blob URL texture errors
-              const maps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
-              maps.forEach(mapType => {
-                if (material[mapType]) {
-                  // Check if texture is from a blob URL that failed to load
-                  if (material[mapType].image &&
-                      material[mapType].image.currentSrc &&
-                      material[mapType].image.currentSrc.startsWith('blob:')) {
-                    console.warn(`Mesh için ${mapType} blob dokusu yüklenemedi, kaldırılıyor`);
-                    material[mapType] = null;
-                  }
-                  // Check if texture image is invalid
-                  else if (material[mapType].image === undefined ||
-                           material[mapType].image === null) {
-                    console.warn(`Mesh için ${mapType} dokusu yüklenemedi, kaldırılıyor`);
-                    material[mapType] = null;
-                  }
-                }
-              });
-              
-              // Update material after potential texture removal
-              material.needsUpdate = true;
-            });
-          }
-          
-          // Preserve original material properties when possible, or create new material with desired properties
-          try {
-            if (child.material && typeof child.material === 'object') {
-              // Try to modify existing material
-              if (!child.material.color || child.material.color.getHexString() === "000000") {
-                child.material.color = new THREE.Color('#2980b9');
-              }
-              child.material.metalness = 0.7;
-              child.material.roughness = 0.2;
-              child.material.envMapIntensity = 1;
-            } else {
-              // Create new material if needed
-              child.material = new THREE.MeshStandardMaterial({
-                color: new THREE.Color('#2980b9'),
-                metalness: 0.7,
-                roughness: 0.2,
-                envMapIntensity: 1
-              });
-            }
-          } catch (materialError) {
-            console.warn("Malzeme güncelleme hatası, varsayılan malzeme oluşturuluyor:", materialError);
-            child.material = new THREE.MeshStandardMaterial({
-              color: new THREE.Color('#2980b9'),
-              metalness: 0.7,
-              roughness: 0.2,
-              envMapIntensity: 1
-            });
-          }
+          child.material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color('#2980b9'),
+            metalness: 0.7,
+            roughness: 0.2,
+            envMapIntensity: 1
+          });
         }
       });
     }
@@ -122,16 +36,13 @@ function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([
+    { id: 1, name: 'Admin', username: 'admin', password: 'admin123', role: 'admin' },
+    { id: 2, name: 'Üretim Sorumlusu', username: 'uretim', password: 'uretim123', role: 'production' },
+    { id: 3, name: 'Kalite Kontrol', username: 'kalite', password: 'kalite123', role: 'quality' }
+  ]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Kullanıcıları doğrudan frontend'den yüklüyoruz
-  useEffect(() => {
-    // Şifreleri client tarafında göstermemek için kaldırıyoruz
-    const safeUsers = localUsers.map(({ password, ...user }) => user);
-    setUsers(safeUsers);
-  }, []);
 
   // Kullanıcı seçildiğinde şifre alanına odaklanma
   useEffect(() => {
@@ -150,27 +61,18 @@ function Login({ onLogin }) {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
-    // Kullanıcı adı ve şifre boş olmamalı
-    if (!username || !password) {
-      setError('Kullanıcı adı ve şifre gereklidir!');
-      setIsLoading(false);
-      return;
-    }
-
-    // Sunucu yerine doğrudan frontend'de doğrulama yapıyoruz
+    
+    // Gerçek bir uygulamada burada API isteği yapılır
     setTimeout(() => {
-      const user = localUsers.find(u => u.username === username && u.password === password);
+      const user = users.find(u => u.username === username && u.password === password);
       
       if (user) {
-        // Şifreyi client'a göndermeden önce kaldır
-        const { password, ...userWithoutPassword } = user;
-        onLogin(userWithoutPassword);
+        onLogin(user);
       } else {
         setError('Kullanıcı adı veya şifre hatalı!');
         setIsLoading(false);
       }
-    }, 500); // Gerçek bir API çağrısı gibi hissettirmek için küçük bir gecikme
+    }, 1000); // Simüle edilmiş gecikme
   };
 
   return (

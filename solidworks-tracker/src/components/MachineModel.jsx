@@ -565,45 +565,13 @@ const MachineModel = forwardRef(
     // Create default texture once
     const defaultTexture = useMemo(() => createDefaultTexture(), []);
 
-    // Model URL'i öncelikle prop'tan alınır; yoksa env'den (Google Drive linki dahil) okunur; yoksa yerel fallback kullanılır
+    // Model URL'i: önce prop, sonra env VITE_MODEL_URL; yoksa Google Cloud Storage fallback
     const computeModelUrl = () => {
-      // 1) Projeler sayfasından gelen URL öncelikli
       if (preferredModelUrl && typeof preferredModelUrl === 'string') {
-        if (preferredModelUrl.includes('drive.google.com')) {
-          const env = import.meta?.env || {};
-          const apiKey = (env.VITE_GDRIVE_API_KEY && String(env.VITE_GDRIVE_API_KEY).trim()) || '';
-          const m = preferredModelUrl.match(/\/file\/d\/([^/]+)\//) || preferredModelUrl.match(/[?&]id=([^&]+)/);
-          const fileId = m && m[1] ? m[1] : '';
-          if (fileId) {
-            // API key varsa Google Drive API yolunu kullan (CORS güvenli), yoksa usercontent hostu dene
-            if (apiKey) return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
-            return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
-          }
-        }
-        // Drive değilse veya id çıkarılamazsa doğrudan kullan
         return preferredModelUrl;
       }
-
-      // 2) .env'den okuma
       const env = import.meta?.env || {};
       const raw = (env.VITE_MODEL_URL && String(env.VITE_MODEL_URL).trim()) || '';
-      const fileIdEnv = (env.VITE_GDRIVE_FILE_ID && String(env.VITE_GDRIVE_FILE_ID).trim()) || '';
-      const apiKey = (env.VITE_GDRIVE_API_KEY && String(env.VITE_GDRIVE_API_KEY).trim()) || '';
-
-      // Google Drive FILE_ID'yi bul
-      let fileId = fileIdEnv;
-      if (!fileId && raw.includes('drive.google.com')) {
-        const m = raw.match(/\/file\/d\/([^/]+)\//) || raw.match(/[?&]id=([^&]+)/);
-        if (m && m[1]) fileId = m[1];
-      }
-
-      // 3) Google Drive ise API key ile (varsa) veya usercontent ile indir
-      if (fileId) {
-        if (apiKey) return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
-        return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
-      }
-
-      // 4) Ham URL varsa onu kullan; yoksa güvenilir CDN fallback'i kullan
       return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
     };
   

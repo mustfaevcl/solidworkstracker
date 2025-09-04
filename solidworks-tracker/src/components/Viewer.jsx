@@ -8,23 +8,8 @@ import useStore from "../components/store/state"
 function computeModelUrl() {
   const env = import.meta?.env || {};
   const raw = (env.VITE_MODEL_URL && String(env.VITE_MODEL_URL).trim()) || '';
-  const fileIdEnv = (env.VITE_GDRIVE_FILE_ID && String(env.VITE_GDRIVE_FILE_ID).trim()) || '';
-  const apiKey = (env.VITE_GDRIVE_API_KEY && String(env.VITE_GDRIVE_API_KEY).trim()) || '';
 
-  // Google Drive FILE_ID çıkar
-  let fileId = fileIdEnv;
-  if (!fileId && raw.includes('drive.google.com')) {
-    const m = raw.match(/\/file\/d\/([^/]+)\//) || raw.match(/[?&]id=([^&]+)/);
-    if (m && m[1]) fileId = m[1];
-  }
-
-  if (fileId) {
-    if (apiKey) return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
-    // API key yoksa direct download host kullan
-    return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
-  }
-
-  // Ham URL varsa onu kullan; yoksa güvenilir CDN fallback'i kullan
+  // Doğrudan URL varsa onu kullan; yoksa Google Cloud Storage fallback'ini kullan
   return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
 }
 
