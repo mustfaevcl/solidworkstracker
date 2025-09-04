@@ -1,5 +1,9 @@
 [build]
-  command = "npm run build --prefix solidworks-tracker"
-  publish = "solidworks-tracker/dist"
+  base = "solidworks-tracker"
+  command = "npm run build"
+  publish = "dist"
   # Netlify Functions devre dışı: bilinçli olarak geçersiz bir klasör veriyoruz
   functions = "disabled_functions"
+
+[build.environment]
+  NODE_VERSION = "20"

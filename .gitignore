@@ -15,3 +15,7 @@ solidworks-tracker/.env.local
 
 # Local Netlify folder
 .netlify
+
+
+# Ignore accidentally committed nested Git repo
+solidworkstracker.git/
