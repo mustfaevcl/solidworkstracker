@@ -2,7 +2,7 @@
   {
     "origin": [
       "http://localhost:5174",
-      "https://https://gmmprojecttracking.netlify.app/"
+      "https://gmmprojecttracking.netlify.app/"
     ],
     "method": ["GET", "HEAD", "OPTIONS"],
     "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
