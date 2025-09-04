@@ -603,8 +603,8 @@ const MachineModel = forwardRef(
         return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
       }
 
-      // 4) Ham URL varsa onu kullan; yoksa yerel fallback
-      return raw || '/ttu-0911-1000000-r00.glb';
+      // 4) Ham URL varsa onu kullan; yoksa güvenilir CDN fallback'i kullan
+      return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
     };
   
     const modelUrl = computeModelUrl();

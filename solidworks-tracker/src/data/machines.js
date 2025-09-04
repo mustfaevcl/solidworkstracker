@@ -16,14 +16,14 @@ export const machines = [
   {
     id: 'sdtu-6006',
     name: 'SDTU-6006 Pres Hattı',
-    modelUrl: '/ttu-0911-1000000-r00.glb',
+    modelUrl: 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb',
     tracker: 'Rasim Doğan',
     description: 'Pres hattı sarf ve stok yönetimi.',
   },
   {
     id: 'sdtu-22312',
     name: 'SDTU-22312 Montaj',
-    modelUrl: '/ttu-0911-1000000-r00.glb',
+    modelUrl: 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb',
     tracker: 'Nebican Tebke',
     description: 'Montaj istasyonları ve ara stoklar.',
   },

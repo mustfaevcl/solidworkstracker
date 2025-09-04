@@ -24,8 +24,8 @@ function computeModelUrl() {
     return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
   }
 
-  // Ham URL varsa onu kullan; yoksa yereldeki fallback
-  return raw || '/ttu-0911-1000000-r00.glb';
+  // Ham URL varsa onu kullan; yoksa güvenilir CDN fallback'i kullan
+  return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
 }
 
 function Model({ url = computeModelUrl() }) {
