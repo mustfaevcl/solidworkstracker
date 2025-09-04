@@ -19,3 +19,7 @@ solidworks-tracker/.env.local
 
 # Ignore accidentally committed nested Git repo
 solidworkstracker.git/
+
+
+# Ignore clean template app; not part of deploy
+solidworks-tracker-clean/
