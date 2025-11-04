@@ -8,6 +8,10 @@ solidworks-tracker/solidworks-tracker/public/**/*.glb
 solidworks-tracker/solidworks-tracker/public/**/*.bin
 solidworks-tracker-clean/solidworks-tracker/public/**/*.glb
 solidworks-tracker-clean/solidworks-tracker/public/**/*.bin
+# Allow compressed model variants for deployment
+!solidworks-tracker/public/models/*-draco.glb
+!solidworks-tracker/public/models/*-compressed.glb
+!solidworks-tracker/public/models/*-geo.glb
 
 # Ignore env files in app
 solidworks-tracker/.env
