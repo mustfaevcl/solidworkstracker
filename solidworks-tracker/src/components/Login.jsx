@@ -40,8 +40,8 @@ function SimpleModel() {
   const computeModelUrl = () => {
     const env = import.meta?.env || {};
     const raw = (env.VITE_MODEL_URL && String(env.VITE_MODEL_URL).trim()) || '';
-    // Doğrudan URL varsa onu kullan; yoksa yerel sıkıştırılmış GLB fallback'ini kullan (giriş ekranı hızlı açılsın)
-    return raw || '/ttu-0911-1000000-r00-meshopt.glb';
+    // Doğrudan URL varsa onu kullan; yoksa Netlify 404 yaşamamak için güvenilir GCS fallback'ini kullan
+    return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
   };
 
   const modelPath = computeModelUrl();
