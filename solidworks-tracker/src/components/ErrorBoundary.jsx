@@ -17,34 +17,36 @@ class ErrorBoundary extends React.Component {
     
     // Update state with error details
     this.setState({
-      error: error,
-      errorInfo: errorInfo
+      error: error || null,
+      errorInfo: errorInfo || null
     });
   }
 
   render() {
     if (this.state.hasError) {
+      const message = this.state.error ? String(this.state.error) : 'Bilinmeyen hata';
+      const stack = this.state.errorInfo && this.state.errorInfo.componentStack
+        ? this.state.errorInfo.componentStack
+        : '';
+
       // Render fallback UI
       return (
-        <div style={{ 
-          padding: '20px', 
-          backgroundColor: '#f8d7da', 
-          color: '#721c24', 
+        <div style={{
+          padding: '20px',
+          backgroundColor: '#f8d7da',
+          color: '#721c24',
           border: '1px solid #f5c6cb',
           borderRadius: '5px',
           margin: '20px'
         }}>
           <h2>Bir hata oluştu</h2>
           <details style={{ whiteSpace: 'pre-wrap' }}>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo.componentStack}
+            {message}
+            {stack ? (<><br />{stack}</>) : null}
           </details>
-          <button 
+          <button
             onClick={() => {
               this.setState({ hasError: false, error: null, errorInfo: null });
-              // Try to reload the component
-              window.location.reload();
             }}
             style={{
               marginTop: '10px',
@@ -56,7 +58,7 @@ class ErrorBoundary extends React.Component {
               cursor: 'pointer'
             }}
           >
-            Yeniden Yükle
+            Devam Et
           </button>
         </div>
       );

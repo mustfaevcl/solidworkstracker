@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Menu({ onSelect }) {
+function Menu({ onSelect, darkMode, setDarkMode, bigButtons, setBigButtons, user, setPage, online, offlineQueueLen }) {
   const menuItems = [
     { label: 'Tezgahta', value: 'tezgahta' },
     { label: 'Tamamlandı', value: 'tamamlandi' },
@@ -15,24 +15,83 @@ function Menu({ onSelect }) {
   ];
 
   return (
-    <div style={{ marginBottom: '20px' }}>
-      {menuItems.map(item => (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 12px',
+      borderBottom: '1px solid #e6e6e6',
+      backgroundColor: '#ffffff',
+      flexShrink: 0,
+      height: '50px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <button
-          key={item.value}
-          onClick={() => onSelect(item.value)}
+          onClick={() => setPage('projects')}
           style={{
-            padding: '8px 16px',
-            margin: '4px',
-            cursor: 'pointer',
-            backgroundColor: '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px'
+            padding: '6px 10px',
+            border: '1px solid #d0d0d0',
+            borderRadius: 6,
+            background: '#f7f7f7',
+            cursor: 'pointer'
           }}
         >
-          {item.label}
+          Projeler
         </button>
-      ))}
+        {/* Machine info would go here if needed */}
+      </div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Status filter buttons */}
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {menuItems.map(item => (
+            <button
+              key={item.value}
+              onClick={() => onSelect(item.value)}
+              style={{
+                padding: '6px 10px',
+                margin: '0 2px',
+                cursor: 'pointer',
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px'
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        
+        {/* Offline status indicator */}
+        {!online && (
+          <div title={`Offline mod — kuyrukta ${(offlineQueueLen || 0)} işlem`} style={{ background: '#e74c3c', color: '#fff', padding: '4px 8px', borderRadius: 6, fontSize: 12 }}>
+            Offline{offlineQueueLen > 0 ? ` • ${offlineQueueLen}` : ''}
+          </div>
+        )}
+        
+        {/* Dark mode toggle */}
+        <button
+          onClick={() => setDarkMode(v => !v)}
+          title="Koyu Tema"
+          style={{ padding: '6px 10px', border: '1px solid #d0d0d0', borderRadius: 6, background: '#f7f7f7', cursor: 'pointer' }}
+        >
+          {darkMode ? '☀️ Açık' : '🌙 Koyu'}
+        </button>
+        
+        {/* Big buttons toggle */}
+        <button
+          onClick={() => setBigButtons(v => !v)}
+          title="Büyük Butonlar"
+          style={{ padding: '6px 10px', border: '1px solid #d0d0d0', borderRadius: 6, background: '#f7f7f7', cursor: 'pointer' }}
+        >
+          {bigButtons ? '↙️ Normal' : '↗️ Büyük'}
+        </button>
+        
+        {/* User info */}
+        <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>{user?.name}</div>
+      </div>
     </div>
   );
 }

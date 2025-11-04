@@ -1,9 +1,13 @@
-import { Canvas } from "@react-three/fiber"
+import { Canvas, useThree } from "@react-three/fiber"
 import { OrbitControls, Stage, useGLTF, Html } from "@react-three/drei"
 import { useCursor } from "@react-three/drei"
 import { useState, useEffect, Suspense } from "react"
 import * as THREE from "three"
+import MeasurementOverlay from "./MeasurementOverlay"
 import useStore from "../components/store/state"
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader"
+import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader"
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js"
 
 function computeModelUrl() {
   const env = import.meta?.env || {};
@@ -13,15 +17,38 @@ function computeModelUrl() {
   return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
 }
 
-function Model({ url = computeModelUrl() }) {
+function Model({ url = computeModelUrl(), onPick }) {
   const [modelError, setModelError] = useState(false)
+  const gl = useThree((state) => state.gl)
   const gltf = useGLTF(url, {
     onError: (e) => {
-      console.error("GLTF yükleme hatası:", e)
-      setModelError(true)
+      console.error("GLTF yükleme hatası:", e);
+      setModelError(true);
     },
     textureColorSpace: THREE.SRGBColorSpace,
-    crossorigin: 'anonymous'
+    crossorigin: 'anonymous',
+    extensions: (loader) => {
+      try {
+        // Meshopt (stream-line geometry decode)
+        if (MeshoptDecoder) {
+          loader.setMeshoptDecoder(MeshoptDecoder);
+        }
+        // Draco (geometry compression)
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+        dracoLoader.setDecoderConfig({ type: "wasm" });
+        loader.setDRACOLoader(dracoLoader);
+        // KTX2/Basis (GPU texture compression)
+        const ktx2 = new KTX2Loader();
+        ktx2.setTranscoderPath("https://unpkg.com/three@0.176.0/examples/jsm/libs/basis/");
+        if (gl && gl.capabilities) {
+          ktx2.detectSupport(gl);
+        }
+        loader.setKTX2Loader(ktx2);
+      } catch (err) {
+        console.warn("GLTF loader extensions init failed:", err);
+      }
+    }
   })
   const setSelected = useStore(state => state.setSelected)
 
@@ -79,12 +106,12 @@ function Model({ url = computeModelUrl() }) {
   return (
     <group>
       {gltf.scene.children.map((child, index) => (
-        <SelectableMesh key={index} object={child} />
+        <SelectableMesh key={index} object={child} onPick={onPick} />
       ))}
     </group>
   )
 
-  function SelectableMesh({ object }) {
+  function SelectableMesh({ object, onPick }) {
     const [hovered, setHovered] = useState(false)
     useCursor(hovered)
     const selectedPart = useStore(state => state.selectedPart)
@@ -124,7 +151,7 @@ function Model({ url = computeModelUrl() }) {
         position={object.position}
         rotation={object.rotation}
         scale={object.scale}
-        onClick={() => setSelected(object.name)}
+        onClick={(e) => { e.stopPropagation(); setSelected(object.name); onPick && onPick(e, object); }}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         material-color={
@@ -165,15 +192,19 @@ function LoadingIndicator() {
 }
 
 export default function Viewer() {
-  return (
-    <Canvas camera={{ position: [5, 5, 5] }}>
-      <ambientLight intensity={0.8} />
-      <Suspense fallback={<LoadingIndicator />}>
-        <Stage>
-          <Model />
-        </Stage>
-      </Suspense>
-      <OrbitControls />
-    </Canvas>
-  )
+ return (
+   <Canvas camera={{ position: [5, 5, 5] }}>
+     <ambientLight intensity={0.8} />
+     <Suspense fallback={<LoadingIndicator />}>
+       <MeasurementOverlay>
+         {(onPick) => (
+           <Stage>
+             <Model onPick={onPick} />
+           </Stage>
+         )}
+       </MeasurementOverlay>
+     </Suspense>
+     <OrbitControls />
+   </Canvas>
+ )
 }

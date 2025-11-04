@@ -81,7 +81,7 @@ const RibbonMenu = forwardRef(({
   // Edges loading state
   isEdgesLoading,
   // App-level UI controls
-  darkMode, setDarkMode, bigButtons, setBigButtons, backgroundColor, setBackgroundColor,
+  darkMode, setDarkMode, bigButtons, setBigButtons,
   // User info
   user,
   // Project info and navigation
@@ -321,21 +321,6 @@ const RibbonMenu = forwardRef(({
             </button>
           </div>
           <div className="ribbon-group-title">Seçim</div>
-        </div>
-        {/* Scene background color */}
-        <div className="ribbon-group">
-          <div className="ribbon-buttons" style={{ alignItems: 'center', gap: 8 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 12, color: '#444' }}>Sahne Rengi</span>
-              <input
-                type="color"
-                value={backgroundColor}
-                onChange={(e) => setBackgroundColor(e.target.value)}
-                title="Sahne arka plan rengini seç"
-              />
-            </label>
-          </div>
-          <div className="ribbon-group-title">Sahne</div>
         </div>
         <div className="ribbon-group">
             <div className="ribbon-buttons">
@@ -1041,8 +1026,8 @@ const RibbonMenu = forwardRef(({
                 </button>
                 <button
                   className="ribbon-button"
-                  onClick={() => { try { setViewMode && setViewMode('dashboard'); } catch {} }}
-                  title="Yönetici Paneli (Dashboard)"
+                  onClick={() => alert('Raporlar ekranı yakında')}
+                  title="Grafik rapor ekranına git"
                 >
                   <span className="ribbon-button-icon">📊</span>
                   <span className="ribbon-button-text">Raporlar</span>
@@ -1604,22 +1589,6 @@ const [cylinderSides, setCylinderSides] = useState(12);
      setShowFastenerPreview(v => !v);
    }, []);
 
-   // Scene background color (user-customizable)
-   const [backgroundColor, setBackgroundColor] = useState(() => {
-     try { return localStorage.getItem('sceneBgColor') || '#ffffff'; } catch { return '#ffffff'; }
-   });
-   useEffect(() => {
-     try { localStorage.setItem('sceneBgColor', backgroundColor); } catch {}
-   }, [backgroundColor]);
-   useEffect(() => {
-     if (!gl) return;
-     try {
-       const col = new THREE.Color(backgroundColor);
-       gl.setClearColor(col, 1);
-       if (invalidate) invalidate();
-     } catch {}
-   }, [backgroundColor, gl, invalidate]);
-
    // Per-part assembly state (tightened / removed / missing)
    const [partAsmStates, setPartAsmStates] = useState({}); // name -> { montajDurumu: 'tightened'|'loose'|undefined, removed: bool, missing: bool }
    const partAsmStatesRef = useRef({});
@@ -1901,8 +1870,6 @@ const [cylinderSides, setCylinderSides] = useState(12);
           setDarkMode={setDarkMode}
           bigButtons={bigButtons}
           setBigButtons={setBigButtons}
-          backgroundColor={backgroundColor}
-          setBackgroundColor={setBackgroundColor}
           user={user}
           selectedMachine={preferredModelUrl ? selectedMachine : selectedMachine}
           onGoToProjects={onGoToProjects}
@@ -4069,101 +4036,9 @@ try { mainAssemblyKeyRef.current = mainBase; } catch {}
       });
     };
 
-    const markSelectedTightened = async () => {
-      try {
-        const target = selectedMeshRef.current || (internalSelectedPart ? meshRefs.current[internalSelectedPart] : null);
-        const name = target?.name || internalSelectedPart;
-        if (!name) { alert('Önce bir parça seçin'); return; }
-
-        // Onay talebi oluştur (Sıkıldı)
-        try {
-          const resp = await fetch('/api/approvals/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              partName: name,
-              action: 'tightened',
-              by: (user?.name || user?.username || 'user')
-            })
-          });
-          if (!resp.ok) {
-            const t = await resp.text().catch(() => '');
-            console.warn('approval request failed:', t || resp.status);
-          }
-        } catch (e) {
-          console.warn('approval request error:', e);
-        }
-
-        // Yerel görünümü güncel tut (anlık geri bildirim)
-        updateStateForSelection(() => ({ montajDurumu: 'tightened', removed: false }));
-      } catch (e) {
-        console.warn('markSelectedTightened failed:', e);
-      }
-    };
-
-    const markSelectedRemoved = async () => {
-      try {
-        const target = selectedMeshRef.current || (internalSelectedPart ? meshRefs.current[internalSelectedPart] : null);
-        const name = target?.name || internalSelectedPart;
-        if (!name) { alert('Önce bir parça seçin'); return; }
-
-        // Onay talebi oluştur (Söküldü)
-        try {
-          const resp = await fetch('/api/approvals/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              partName: name,
-              action: 'removed',
-              by: (user?.name || user?.username || 'user')
-            })
-          });
-          if (!resp.ok) {
-            const t = await resp.text().catch(() => '');
-            console.warn('approval request failed:', t || resp.status);
-          }
-        } catch (e) {
-          console.warn('approval request error:', e);
-        }
-
-        // Yerel görünümü güncel tut
-        updateStateForSelection(s => ({ removed: !s.removed, montajDurumu: s.removed ? s.montajDurumu : (s.montajDurumu || '') }));
-      } catch (e) {
-        console.warn('markSelectedRemoved failed:', e);
-      }
-    };
-
-    const toggleSelectedMissing = async () => {
-      try {
-        const target = selectedMeshRef.current || (internalSelectedPart ? meshRefs.current[internalSelectedPart] : null);
-        const name = target?.name || internalSelectedPart;
-        if (!name) { alert('Önce bir parça seçin'); return; }
-
-        // Onay talebi oluştur (Eksik)
-        try {
-          const resp = await fetch('/api/approvals/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              partName: name,
-              action: 'missing',
-              by: (user?.name || user?.username || 'user')
-            })
-          });
-          if (!resp.ok) {
-            const t = await resp.text().catch(() => '');
-            console.warn('approval request failed:', t || resp.status);
-          }
-        } catch (e) {
-          console.warn('approval request error:', e);
-        }
-
-        // Yerel görünümü güncel tut
-        updateStateForSelection(s => ({ missing: !s.missing }));
-      } catch (e) {
-        console.warn('toggleSelectedMissing failed:', e);
-      }
-    };
+    const markSelectedTightened = () => updateStateForSelection(() => ({ montajDurumu: 'tightened', removed: false }));
+    const markSelectedRemoved = () => updateStateForSelection(s => ({ removed: !s.removed, montajDurumu: s.removed ? s.montajDurumu : (s.montajDurumu || '') }));
+    const toggleSelectedMissing = () => updateStateForSelection(s => ({ missing: !s.missing }));
 
     // Calculate and store group centers only once when model is loaded
     useEffect(() => {
@@ -4646,7 +4521,7 @@ try { mainAssemblyKeyRef.current = mainBase; } catch {}
             } else if (isHoveredForColoring) {
               mesh.material.color.set('#00ffff'); // Cyan
             } else if (isSelectedForColoring) {
-              mesh.material.color.set('#ffea00');
+              mesh.material.color.set('yellow');
             } else {
               switch (status) {
                 case 'tezgahta': mesh.material.color.set('orange'); break;

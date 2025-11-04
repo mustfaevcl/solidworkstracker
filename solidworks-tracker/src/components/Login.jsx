@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment } from '@react-three/drei';
@@ -28,13 +28,20 @@ const localUsers = [
   }
 ];
 
+// Proje Takip kullanıcıları
+const projectTrackerUsers = [
+  { id: 101, username: 'huseyin.corakcioglu', password: 'gmm123', name: 'Hüseyin Çorakçıoğlu', role: 'tracker' },
+  { id: 102, username: 'omer.karakus',     password: 'gmm123', name: 'Ömer Karakuş',       role: 'tracker' },
+  { id: 103, username: 'rasim.dogan',      password: 'gmm123', name: 'Rasim Doğan',        role: 'tracker' }
+];
+
 // Basit 3D model görüntüleyici
 function SimpleModel() {
   const computeModelUrl = () => {
     const env = import.meta?.env || {};
     const raw = (env.VITE_MODEL_URL && String(env.VITE_MODEL_URL).trim()) || '';
-    // Doğrudan URL varsa onu kullan; yoksa Google Cloud Storage fallback'i kullan
-    return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
+    // Doğrudan URL varsa onu kullan; yoksa yerel sıkıştırılmış GLB fallback'ini kullan (giriş ekranı hızlı açılsın)
+    return raw || '/ttu-0911-1000000-r00-meshopt.glb';
   };
 
   const modelPath = computeModelUrl();
@@ -125,13 +132,22 @@ function Login({ onLogin }) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [userGroup, setUserGroup] = useState('standard'); // 'standard' | 'project'
 
-  // Kullanıcıları doğrudan frontend'den yüklüyoruz
+  // Şifreleri client tarafında göstermeden listeler
+  const safeStandardUsers = useMemo(() => localUsers.map(({ password, ...user }) => user), []);
+  const safeProjectUsers  = useMemo(() => projectTrackerUsers.map(({ password, ...user }) => user), []);
+
+  // Kullanıcı listesi: seçili gruba göre (Normal / Proje Takip)
   useEffect(() => {
-    // Şifreleri client tarafında göstermemek için kaldırıyoruz
-    const safeUsers = localUsers.map(({ password, ...user }) => user);
-    setUsers(safeUsers);
-  }, []);
+    const list = userGroup === 'project' ? safeProjectUsers : safeStandardUsers;
+    setUsers(list);
+    // Grup değişiminde seçim/alanları sıfırla
+    setSelectedUser(null);
+    setUsername('');
+    setPassword('');
+    setError('');
+  }, [userGroup, safeStandardUsers, safeProjectUsers]);
 
   // Kullanıcı seçildiğinde şifre alanına odaklanma
   useEffect(() => {
@@ -160,7 +176,8 @@ function Login({ onLogin }) {
 
     // Sunucu yerine doğrudan frontend'de doğrulama yapıyoruz
     setTimeout(() => {
-      const user = localUsers.find(u => u.username === username && u.password === password);
+      const candidateList = userGroup === 'project' ? projectTrackerUsers : localUsers;
+      const user = candidateList.find(u => u.username === username && u.password === password);
       
       if (user) {
         // Şifreyi client'a göndermeden önce kaldır
@@ -229,9 +246,43 @@ function Login({ onLogin }) {
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <h2 style={{ color: '#2c3e50', margin: 0 }}>Hoş Geldiniz</h2>
           <p style={{ color: '#7f8c8d', marginTop: '10px' }}>Lütfen hesabınıza giriş yapın</p>
+        </div>
+
+        {/* Giriş grubu seçimi: Normal / Proje Takip */}
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '0 0 20px 0' }}>
+          <button
+            onClick={() => setUserGroup('standard')}
+            style={{
+              padding: '8px 12px',
+              border: userGroup === 'standard' ? '2px solid #3498db' : '1px solid #e0e0e0',
+              borderRadius: '20px',
+              backgroundColor: userGroup === 'standard' ? '#ecf5ff' : 'white',
+              color: userGroup === 'standard' ? '#2c3e50' : '#7f8c8d',
+              cursor: 'pointer',
+              minWidth: 130
+            }}
+            title="Normal kullanıcılar"
+          >
+            Normal Giriş
+          </button>
+          <button
+            onClick={() => setUserGroup('project')}
+            style={{
+              padding: '8px 12px',
+              border: userGroup === 'project' ? '2px solid #27ae60' : '1px solid #e0e0e0',
+              borderRadius: '20px',
+              backgroundColor: userGroup === 'project' ? '#eafaf1' : 'white',
+              color: userGroup === 'project' ? '#2c3e50' : '#7f8c8d',
+              cursor: 'pointer',
+              minWidth: 130
+            }}
+            title="Proje Takip kullanıcıları"
+          >
+            Proje Takip
+          </button>
         </div>
         
         {!selectedUser ? (
@@ -273,7 +324,17 @@ function Login({ onLogin }) {
                   </div>
                   <div>
                     <div style={{ fontWeight: 'bold' }}>{user.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#7f8c8d' }}>{user.role === 'admin' ? 'Yönetici' : user.role === 'production' ? 'Üretim' : 'Kalite'}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#7f8c8d' }}>
+                      {user.role === 'admin'
+                        ? 'Yönetici'
+                        : user.role === 'production'
+                        ? 'Üretim'
+                        : user.role === 'quality'
+                        ? 'Kalite'
+                        : user.role === 'tracker'
+                        ? 'Proje Takip'
+                        : user.role}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -299,7 +360,15 @@ function Login({ onLogin }) {
               </div>
               <div style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{selectedUser.name}</div>
               <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>
-                {selectedUser.role === 'admin' ? 'Yönetici' : selectedUser.role === 'production' ? 'Üretim Sorumlusu' : 'Kalite Kontrol'}
+                {selectedUser.role === 'admin'
+                  ? 'Yönetici'
+                  : selectedUser.role === 'production'
+                  ? 'Üretim Sorumlusu'
+                  : selectedUser.role === 'quality'
+                  ? 'Kalite Kontrol'
+                  : selectedUser.role === 'tracker'
+                  ? 'Proje Takip'
+                  : selectedUser.role}
               </div>
             </div>
             

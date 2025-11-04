@@ -13,7 +13,10 @@ const HEADERS = [
   'Fason Firma',
   'Gönderim Tarihi',
   'Termin Tarihi',
-  'Notlar'
+  'Notlar',
+  'Montaj Durumu',
+  'Sökülmüş',
+  'Eksik'
 ];
 
 const SHEET_NAME = process.env.SHEET_NAME || 'Veriler';
