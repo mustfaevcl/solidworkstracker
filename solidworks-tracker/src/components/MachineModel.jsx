@@ -1288,8 +1288,9 @@ const MachineModel = forwardRef(
         return `https://drive.usercontent.google.com/uc?export=download&id=${fileId}`;
       }
 
-      // 4) Ham URL varsa onu kullan; yoksa güvenilir CDN fallback'i kullan
-      return raw || 'https://storage.googleapis.com/makinalar/ttu-0911-1000000-r00%20%281%29.glb';
+      // 4) Ham URL varsa onu kullan; yoksa üretimde 403/404 yaşamamak için herkese açık örnek bir GLB kullan
+      // Kaynak: Khronos glTF Sample Models (Duck.glb)
+      return raw || 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb';
     };
   
     const modelUrl = computeModelUrl();
