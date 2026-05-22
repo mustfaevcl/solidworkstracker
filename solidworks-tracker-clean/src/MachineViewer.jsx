@@ -6,8 +6,8 @@ import MachineModel from './MachineModel';
 const MachineViewer = () => {
   const modelRef = useRef();
   const [selectedPart, setSelectedPart] = useState(null);
-  const [partStatuses, setPartStatuses] = useState({});
-  const [isIsolated, setIsolated] = useState(false);
+  const [partStatuses] = useState({});
+  const [isIsolated] = useState(false); // eslint-disable-line no-unused-vars
 
   const handlePartClick = (partName) => {
     setSelectedPart(partName);

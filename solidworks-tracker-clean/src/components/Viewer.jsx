@@ -19,7 +19,6 @@ function Model({ url }) {
   function SelectableMesh({ object }) {
     const [hovered, setHovered] = useState(false)
     useCursor(hovered)
-    const selectedPart = useStore(state => state.selectedPart)
     const partStatuses = useStore(state => state.partStatuses)
     const status = partStatuses[object.name]
 

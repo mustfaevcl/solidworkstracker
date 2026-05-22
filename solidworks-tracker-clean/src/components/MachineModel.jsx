@@ -18,7 +18,7 @@ const MachineModel = forwardRef(
     const groupRef = useRef();
     const partGroupsRef = useRef({});
     const partFamiliesRef = useRef({});
-    const { camera, controls, gl } = useThree();
+    const { gl } = useThree();
     const [hoveredPart, setHoveredPart] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState('normal'); // 'normal', 'wireframe', 'xray'
@@ -26,12 +26,12 @@ const MachineModel = forwardRef(
     const [clippingPlane, setClippingPlane] = useState(null); // Kesit alma için
     const [clippingAxis, setClippingAxis] = useState('x'); // Kesit alma ekseni: 'x', 'y', 'z'
     const [clippingPosition, setClippingPosition] = useState(0); // Kesit alma pozisyonu
-    const [showMobileControls, setShowMobileControls] = useState(false); // Kontrolleri gösterme durumu
+    const [showMobileControls, setShowMobileControls] = useState(false); // eslint-disable-line no-unused-vars
     const [hiddenPartsHistory, setHiddenPartsHistory] = useState([]); // Gizleme geçmişi için
     const [modelSize, setModelSize] = useState({ x: 10, y: 10, z: 10 }); // Model boyutu
     const [showClippingPlane, setShowClippingPlane] = useState(false); // Kesit düzlemini göster/gizle
     const [isClippingActive, setIsClippingActive] = useState(false); // Kesit aktif mi
-    const [clippingOffset, setClippingOffset] = useState({ x: 0, y: 0, z: 0 }); // Kesit düzlemi ofset
+    const [clippingOffset, setClippingOffset] = useState({ x: 0, y: 0, z: 0 }); // eslint-disable-line no-unused-vars
     const [controlsPosition, setControlsPosition] = useState('bottom-right'); // Kontrollerin konumu
     const [showControls, setShowControls] = useState(false); // Kontrol panelini göster/gizle
     
@@ -45,7 +45,7 @@ const MachineModel = forwardRef(
     const [showMeasurementHistory, setShowMeasurementHistory] = useState(false); // Ölçüm geçmişini göster/gizle
 
     // Cihaz tipini tespit et
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(false); // eslint-disable-line no-unused-vars
     
     useEffect(() => {
       const checkMobile = () => {
@@ -470,7 +470,7 @@ const MachineModel = forwardRef(
 
     // Görünüm modu değiştiğinde tüm parçaların materyallerini güncelle
     useEffect(() => {
-      Object.entries(partGroupsRef.current).forEach(([name, meshes]) => {
+      Object.entries(partGroupsRef.current).forEach(([/* name */, meshes]) => {
         if (!meshes || meshes.length === 0) return;
 
         meshes.forEach(mesh => {
@@ -752,14 +752,6 @@ const MachineModel = forwardRef(
       
       // Tüm materyallerden kesit düzlemini kaldır
       applyClippingToAllMaterials(null);
-    };
-
-    // Kesit düzlemi ofsetini güncelle
-    const updateClippingOffset = (axis, value) => {
-      setClippingOffset(prev => ({
-        ...prev,
-        [axis]: value
-      }));
     };
 
     // Ölçüm modunu başlat
